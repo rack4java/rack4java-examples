@@ -23,7 +23,9 @@ public class ExampleTest extends TestCase {
     public void testStringBody() throws Exception {
     	RackResponse ret = new Rack() {
 			@Override public RackResponse call(Context<Object> environment) throws Exception {
-				return new RackResponse(200, "Wibble", "Content-Type", "text/plain");
+				return new RackResponse(200)
+					.withHeader("Content-Type", "text/plain")
+					.withBody("Wibble");
 			}
 		}.call(env);
     	
@@ -36,7 +38,9 @@ public class ExampleTest extends TestCase {
     public void testStringToByteConversion() throws Exception {
     	RackResponse ret = new Rack() {
 			@Override public RackResponse call(Context<Object> environment) throws Exception {
-				return new RackResponse(200, "<whatever/>", "Content-Type", "text/xml");
+				return new RackResponse(200)
+					.withHeader("Content-Type", "text/xml")
+					.withBody("<whatever/>");
 			}
 		}.call(env);
     	
@@ -49,7 +53,9 @@ public class ExampleTest extends TestCase {
     public void testByteToStringConversion() throws Exception {
     	RackResponse ret = new Rack() {
 			@Override public RackResponse call(Context<Object> environment) throws Exception {
-				return new RackResponse(200, "picture".getBytes(), "Content-Type", "image/png");
+				return new RackResponse(200)
+					.withHeader("Content-Type", "image/png")
+					.withBody("picture".getBytes());
 			}
 		}.call(env);
     	
@@ -63,7 +69,9 @@ public class ExampleTest extends TestCase {
     public void testByteToStringConversionWithCharset() throws Exception {
     	RackResponse ret = new Rack() {
 			@Override public RackResponse call(Context<Object> environment) throws Exception {
-				return new RackResponse(200, new byte[] {112, 105, 99, 116, -31, -69, -96, 114, 101}, Charset.forName("UTF-8"), "Content-Type", "image/png");
+				return new RackResponse(200)
+					.withHeader("Content-Type", "image/png")
+					.withBody(new byte[] {112, 105, 99, 116, -31, -69, -96, 114, 101}, Charset.forName("UTF-8"));
 			}
 		}.call(env);
     	

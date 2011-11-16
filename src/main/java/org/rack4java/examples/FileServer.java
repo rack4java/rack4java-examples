@@ -18,9 +18,11 @@ public class FileServer implements Rack {
 		String filename = (String) environment.get(Rack.PATH_INFO);
 		File file = new File(root, filename);
 		if (file.canRead()) {
-			return new RackResponse(200, file);
+			return new RackResponse(200).withBody(file);
 		}
-		return new RackResponse(404, "File [" + filename + "] not found", "Content-Type", "text/plain");
+		return new RackResponse(404)
+			.withHeader("Content-Type", "text/plain")
+			.withBody("File [" + filename + "] not found");
 	}
 
 }

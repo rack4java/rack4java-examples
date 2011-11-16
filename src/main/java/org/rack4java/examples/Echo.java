@@ -9,8 +9,8 @@ import org.rack4java.utils.StreamHelper;
 
 public class Echo implements Rack {
     @Override public RackResponse call(Context<Object> environment) throws Exception {
-    	RackResponse ret = new RackResponse(200, 
-    			StreamHelper.readAsString((InputStream) environment.get(Rack.RACK_INPUT)));
+    	RackResponse ret = new RackResponse(200)
+    		.withBody(StreamHelper.readAsString((InputStream) environment.get(Rack.RACK_INPUT)));
     	
         String type = (String) environment.get(Rack.HTTP_ + "Content-Type");
         if (null != type) {

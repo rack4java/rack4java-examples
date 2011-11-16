@@ -1,8 +1,8 @@
 package org.rack4java.examples;
 
 import java.io.File;
-import java.util.Map;
 
+import org.rack4java.Context;
 import org.rack4java.Rack;
 import org.rack4java.RackResponse;
 
@@ -14,7 +14,7 @@ public class FileServer implements Rack {
 		this.root = new File(root);
 	}
 
-	@Override public RackResponse call(Map<String, Object> environment) throws Exception {
+	@Override public RackResponse call(Context<Object> environment) throws Exception {
 		String filename = (String) environment.get(Rack.PATH_INFO);
 		File file = new File(root, filename);
 		if (file.canRead()) {

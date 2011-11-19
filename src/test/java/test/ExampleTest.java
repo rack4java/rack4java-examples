@@ -2,28 +2,30 @@ package test;
 
 import java.io.FileInputStream;
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.rack4java.Context;
 import org.rack4java.Rack;
 import org.rack4java.RackResponse;
+import org.rack4java.context.MapContext;
 import org.rack4java.examples.FileServer;
 import org.rack4java.utils.StreamHelper;
 
 public class ExampleTest extends TestCase {
 	
-	Map<String, Object> env;
+	Context<Object> env;
 	
 	public void setUp() {
-		env = new HashMap<String, Object>();
+		env = new MapContext<Object>();
 	}
 	
     public void testStringBody() throws Exception {
     	RackResponse ret = new Rack() {
-			@Override public RackResponse call(Map<String, Object> environment) throws Exception {
-				return new RackResponse(200, "Wibble", "Content-Type", "text/plain");
+			@Override public RackResponse call(Context<Object> environment) throws Exception {
+				return new RackResponse(200)
+					.withHeader("Content-Type", "text/plain")
+					.withBody("Wibble");
 			}
 		}.call(env);
     	
@@ -35,8 +37,10 @@ public class ExampleTest extends TestCase {
 	
     public void testStringToByteConversion() throws Exception {
     	RackResponse ret = new Rack() {
-			@Override public RackResponse call(Map<String, Object> environment) throws Exception {
-				return new RackResponse(200, "<whatever/>", "Content-Type", "text/xml");
+			@Override public RackResponse call(Context<Object> environment) throws Exception {
+				return new RackResponse(200)
+					.withHeader("Content-Type", "text/xml")
+					.withBody("<whatever/>");
 			}
 		}.call(env);
     	
@@ -48,8 +52,10 @@ public class ExampleTest extends TestCase {
 	
     public void testByteToStringConversion() throws Exception {
     	RackResponse ret = new Rack() {
-			@Override public RackResponse call(Map<String, Object> environment) throws Exception {
-				return new RackResponse(200, "picture".getBytes(), "Content-Type", "image/png");
+			@Override public RackResponse call(Context<Object> environment) throws Exception {
+				return new RackResponse(200)
+					.withHeader("Content-Type", "image/png")
+					.withBody("picture".getBytes());
 			}
 		}.call(env);
     	
@@ -62,8 +68,10 @@ public class ExampleTest extends TestCase {
 	
     public void testByteToStringConversionWithCharset() throws Exception {
     	RackResponse ret = new Rack() {
-			@Override public RackResponse call(Map<String, Object> environment) throws Exception {
-				return new RackResponse(200, new byte[] {112, 105, 99, 116, -31, -69, -96, 114, 101}, Charset.forName("UTF-8"), "Content-Type", "image/png");
+			@Override public RackResponse call(Context<Object> environment) throws Exception {
+				return new RackResponse(200)
+					.withHeader("Content-Type", "image/png")
+					.withBody(new byte[] {112, 105, 99, 116, -31, -69, -96, 114, 101}, Charset.forName("UTF-8"));
 			}
 		}.call(env);
     	

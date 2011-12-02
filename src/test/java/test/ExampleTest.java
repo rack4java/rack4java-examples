@@ -1,6 +1,7 @@
 package test;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
 
 import junit.framework.TestCase;
@@ -20,6 +21,14 @@ public class ExampleTest extends TestCase {
 		env = new MapContext<Object>();
 	}
 	
+	private String getBodyAsString(RackResponse response, Charset charset) throws IOException {
+		return new String(response.getBodyAsBytes(), charset);
+	}
+	
+	private String getBodyAsString(RackResponse response) throws IOException {
+		return new String(response.getBodyAsBytes());
+	}
+	
     public void testStringBody() throws Exception {
     	RackResponse ret = new Rack() {
 			@Override public RackResponse call(Context<Object> environment) throws Exception {
@@ -31,8 +40,8 @@ public class ExampleTest extends TestCase {
     	
     	assertEquals(200, ret.getStatus());
     	assertEquals("text/plain", ret.getHeaders().get("Content-Type"));
-    	assertNull(ret.getFile());
-    	assertEquals("Wibble", ret.getString());
+    	assertNull(ret.getFileBody());
+    	assertEquals("Wibble", getBodyAsString(ret));
     }
 	
     public void testStringToByteConversion() throws Exception {
@@ -46,8 +55,8 @@ public class ExampleTest extends TestCase {
     	
     	assertEquals(200, ret.getStatus());
     	assertEquals("text/xml", ret.getHeaders().get("Content-Type"));
-    	assertNull(ret.getFile());
-    	assertEquals(11, ret.getBytes().length);
+    	assertNull(ret.getFileBody());
+    	assertEquals(11, ret.getBodyLength());
     }
 	
     public void testByteToStringConversion() throws Exception {
@@ -61,9 +70,9 @@ public class ExampleTest extends TestCase {
     	
     	assertEquals(200, ret.getStatus());
     	assertEquals("image/png", ret.getHeaders().get("Content-Type"));
-    	assertNull(ret.getFile());
-    	assertEquals(7, ret.getBytes().length);
-    	assertEquals("picture", ret.getString());
+    	assertNull(ret.getFileBody());
+    	assertEquals(7, ret.getBodyLength());
+    	assertEquals("picture", getBodyAsString(ret));
     }
 	
     public void testByteToStringConversionWithCharset() throws Exception {
@@ -71,51 +80,67 @@ public class ExampleTest extends TestCase {
 			@Override public RackResponse call(Context<Object> environment) throws Exception {
 				return new RackResponse(200)
 					.withHeader("Content-Type", "image/png")
-					.withBody(new byte[] {112, 105, 99, 116, -31, -69, -96, 114, 101}, Charset.forName("UTF-8"));
+					.withBody(new byte[] {112, 105, 99, 116, -31, -69, -96, 114, 101});
 			}
 		}.call(env);
     	
     	assertEquals(200, ret.getStatus());
     	assertEquals("image/png", ret.getHeaders().get("Content-Type"));
-    	assertNull(ret.getFile());
-    	assertEquals(9, ret.getBytes().length);
-    	assertEquals("pict\u1ee0re", ret.getString());
-    	assertEquals(7, ret.getString().length());
+    	assertNull(ret.getFileBody());
+    	assertEquals(9, ret.getBodyLength());
+    	assertEquals("pict\u1ee0re", getBodyAsString(ret, Charset.forName("UTF-8")));
+    }
+	
+    public void testBytesWithSmallerContentLength() throws Exception {
+    	RackResponse ret = new Rack() {
+			@Override public RackResponse call(Context<Object> environment) throws Exception {
+				return new RackResponse(200)
+					.withHeader("Content-Type", "image/png")
+					.withBody(new byte[] {112, 105, 99, 116, -31, -69, -96, 114, 101})
+					.withContentLength(4);
+			}
+		}.call(env);
+    	
+    	assertEquals(200, ret.getStatus());
+    	assertEquals("image/png", ret.getHeaders().get("Content-Type"));
+    	assertNull(ret.getFileBody());
+    	assertEquals(4, ret.getBodyLength());
+    	assertEquals("pict", getBodyAsString(ret, Charset.forName("UTF-8")));
     }
 	
     public void testFileBody() throws Exception {
-    	env.put(Rack.PATH_INFO, "static.html");
+    	env.with(Rack.PATH_INFO, "static.html");
     	RackResponse ret = new FileServer("src/test/files").call(env);
     	
     	assertEquals(200, ret.getStatus());
-    	assertNotNull(ret.getFile());
-    	assertEquals("<p>Hello!</p>", StreamHelper.readAsString(new FileInputStream(ret.getFile())));
+    	assertNotNull(ret.getFileBody());
+    	assertEquals("<p>Hello!</p>", StreamHelper.readAsString(new FileInputStream(ret.getFileBody())));
     }
 	
     public void testFileToByteConversion() throws Exception {
-    	env.put(Rack.PATH_INFO, "static.html");
+    	env.with(Rack.PATH_INFO, "static.html");
     	RackResponse ret = new FileServer("src/test/files").call(env);
     	
     	assertEquals(200, ret.getStatus());
-    	assertNotNull(ret.getFile());
-    	assertEquals(13, ret.getBytes().length);
+    	assertNotNull(ret.getFileBody());
+    	assertEquals(13, ret.getBodyAsBytes().length);
     }
 	
     public void testFileToStringConversion() throws Exception {
-    	env.put(Rack.PATH_INFO, "static.html");
+    	env.with(Rack.PATH_INFO, "static.html");
     	RackResponse ret = new FileServer("src/test/files").call(env);
     	
     	assertEquals(200, ret.getStatus());
-    	assertNotNull(ret.getFile());
-    	assertEquals("<p>Hello!</p>", ret.getString());
+    	assertNotNull(ret.getFileBody());
+    	assertEquals("<p>Hello!</p>", getBodyAsString(ret));
     }
 	
     public void testFileNotFound() throws Exception {
-    	env.put(Rack.PATH_INFO, "missing.html");
+    	env.with(Rack.PATH_INFO, "missing.html");
     	RackResponse ret = new FileServer("src/test/files").call(env);
     	
     	assertEquals(404, ret.getStatus());
     	assertEquals("text/plain", ret.getHeaders().get("Content-Type"));
-    	assertNull(ret.getFile());
+    	assertNull(ret.getFileBody());
     }
 }

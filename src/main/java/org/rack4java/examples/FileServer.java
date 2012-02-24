@@ -20,6 +20,7 @@ public class FileServer implements Rack {
 		if (file.canRead()) {
 			return new RackResponse(200).withBody(file);
 		}
+		
 		return new RackResponse(404)
 			.withHeader("Content-Type", "text/plain")
 			.withBody("File [" + filename + "] not found");

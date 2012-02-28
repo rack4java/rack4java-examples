@@ -14,8 +14,8 @@ public class FileServer implements Rack {
 		this.root = new File(root);
 	}
 
-	@Override public RackResponse call(Context<Object> environment) throws Exception {
-		String filename = (String) environment.get(Rack.PATH_INFO);
+	@Override public Context<String> call(Context<String> environment) throws Exception {
+		String filename = environment.get(Rack.PATH_INFO);
 		File file = new File(root, filename);
 		if (file.canRead()) {
 			return new RackResponse(200).withBody(file);

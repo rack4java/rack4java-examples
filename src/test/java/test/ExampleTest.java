@@ -26,7 +26,7 @@ public class ExampleTest extends TestCase {
 	}
 
 	private RackBody getBody(Context<String> response) {
-		return (RackBody) response.getObject(Rack.RESPONSE_BODY);
+		return (RackBody) response.getObject(Rack.MESSAGE_BODY);
 	}
 	
 	private String getBodyAsString(Context<String> response, Charset charset) {
